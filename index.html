@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>caldera ward detective | a game by avern systems</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+    <style type="text/css">
+        html, body {
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .prompt {
+          width: 300px;
+          background-color: black;
+          color: white;
+          position: fixed;
+          bottom: 2rem;
+          padding: 0.25rem;
+          text-align: center;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+
+        .prompt span {
+          margin-left: 1rem;
+          color: aquamarine;
+        }
+        #narrative-controller {
+          width: 100%;
+          height: 120px;
+          background: linear-gradient(transparent, black);;
+          position: fixed;
+          left: 0rem;
+          right: 0rem;
+          bottom: 0rem;
+        }
+        #narrative-controller p {
+          margin: 2rem 2rem 0.5rem 2rem;
+          color: white;
+          font-family: sans-serif;
+          text-align: center;
+          font-style: italic;
+        }
+        #narrative-controller .next-btn {
+          position: absolute;
+          right: 0;
+          bottom:0;
+        }
+        #narrative-controller .close-btn {
+          position: absolute;
+          right: 0;
+          top:0;
+        }
+
+        #battle {
+          position: fixed;
+          top: 2rem;
+          display: flex;
+          justify-content: center;
+          margin: 2rem;
+          padding: 1rem;
+          gap: 4rem;
+          background-color: whitesmoke;
+        }
+
+        [data-player="true"] .avatar {
+          background: lightblue;
+          height: 8rem;
+        }
+        [data-player="false"] .avatar {
+          background: lightcoral;
+          height: 8rem;
+        }
+
+        .meter {
+          height: 10px;
+          width: 200px;
+          background-color: lightgray;
+          margin: 1rem 0;
+        }
+        [data-player="true"] .meter .progress {
+          background-color: dodgerblue;
+          height: 100%;
+
+        }
+
+        [data-player="false"] .meter .progress {
+          background-color: crimson;
+          height: 100%;
+        }
+
+        .log { 
+          position: fixed;
+          margin-left: 2rem;
+          top: 50%;
+        }
+
+        .start-menu {
+          z-index: 1;
+          position: fixed;
+          height: 100vh;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+          gap: 1rem;
+          background: radial-gradient(hsl(0, 57%, 64%), hsl(340, 57%, 74%));
+        }
+
+        h1 {
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          font-family: Arial, Helvetica, sans-serif;
+          color: white;
+          font-weight: normal;
+          text-shadow: orangered 1px 0 10px;
+        }
+
+        h1 span {
+          color: brown;
+        }
+
+        .start-menu button {
+          width: 200px;
+          height: 25px;
+          background: none;
+          border-radius: 4px;
+          border: none;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          font-family: Arial, Helvetica, sans-serif;
+          color: white;
+          font-weight: normal;
+
+        }
+        button:disabled {
+          opacity: 0.6;
+        }
+        button:hover:not(:disabled) {
+          color: black;
+        }
+
+        footer {
+          justify-self: end;
+          text-align: center;
+          margin-top: 0.5rem;
+        }
+        footer, footer a {
+
+          color: black;
+          font-size: 10px;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .player-data-ui {
+          color: white;
+          background-color: transparent;
+          position: fixed;
+          top: 2rem;
+          left: 4rem;
+          font-family: Arial, Helvetica, sans-serif;
+          font-weight: normal;
+          display: flex;
+          gap: 4rem;
+
+        }
+        .player-data-ui h2 {
+          font-weight: normal;
+          text-transform: uppercase;
+          font-size: 10px;
+        }
+        .player-data-ui p {
+          font-weight: normal;
+          font-size: 10px;
+          margin-top: 0;
+          font-style: normal;
+          margin-bottom: 0.5;
+          text-align: left;
+        }
+        .xp-count {
+          margin-left: 1rem;
+        }
+
+        .controls-ui {
+          background-color: black;
+          color: white;
+          font-weight: normal;
+          font-size: 10px;
+          padding: 0.5rem;
+          position: fixed;
+          top: 1rem;
+          right: 1rem;
+          opacity: 0.8;
+        }
+        .controls-ui p {
+          margin-bottom: 0.25rem;
+        }
+        
+
+
+
+    </style>
+</head>
+<body>
+
+  <div class="mask"></div><!-- Cover scene transitions via gsap-->
+
+  <div class="start-menu">
+    <h1>caldera <span>ward</span> detective</h1>
+    <button class="start-btn">New Game</button>
+    <button disabled class="load-btn">Load Game</button>
+    <button disabled class="options-btn">Options</button> <!-- Show/change controls layout etc-->
+    <button disabled class="dev-start-btn">DEV MODE</button>
+    <footer><a href="https://www.avern.systems/">avern.systems</a></footer>
+  </div>
+  <div id="narrative-controller" style="opacity: 0; pointer-events: none;">
+      <div class="text-container"></div>
+      <!-- <button class="close-btn">x</button> -->
+      <!-- <button class="next-btn">next</button> -->
+  </div>
+
+  <div id="battle" style="opacity: 0; pointer-events: none;">
+    <div class="battleMember" data-player="true" data-id="1" data-hp="20" data-mp="10" data-speed="70">
+      <p class="avatar">Player 1</p>
+
+      <div class="attributes">
+        <div><span class="current-hp"></span> / <span class="total-hp"></span> HP</div>
+        <div><span class="current-mp"></span> / <span class="total-mp"></span> MP</div>
+      </div>
+
+      <div class="meter">
+        <div class="progress"></div>
+      </div>
+      <div class="actionList">
+        <button 
+          class="actionBtn"
+          data-name="Normal Attack"
+          data-dmg="5"
+          data-mp="0"
+        >Normal Attack</button>
+        <button 
+          class="actionBtn"
+          data-name="Fire Attack"
+          data-dmg="10"
+          data-mp="5"
+        >Fire Attack</button>
+      </div>
+    </div>
+
+    <div class="battleMember" data-player="true" data-id="2" data-hp="20" data-mp="10" data-speed="15">
+      <p class="avatar">Player 2</p>
+      <div class="attributes">
+        <div><span class="current-hp"></span> / <span class="total-hp"></span> HP</div>
+        <div><span class="current-mp"></span> / <span class="total-mp"></span> MP</div>
+      </div>
+      <div class="meter">
+        <div class="progress"></div>
+      </div>
+
+      <div class="actionList">
+        <button 
+          class="actionBtn"
+          data-name="Normal Attack"
+          data-dmg="5"
+          data-mp="0"
+        >Normal Attack</button>
+        <button 
+          class="actionBtn"
+          data-name="Fire Attack"
+          data-dmg="10"
+          data-mp="5"
+        >Fire Attack</button>
+      </div>
+    </div>
+
+    <div class="battleMember" data-player="false" data-id="3" data-hp="20" data-mp="10" data-speed="80">
+      <p class="avatar">Enemy 1</p>
+      <div class="attributes">
+        <div><span class="current-hp"></span> / <span class="total-hp"></span> HP</div>
+        <div><span class="current-mp"></span> / <span class="total-mp"></span> MP</div>
+      </div>
+      <div class="meter">
+        <div class="progress"></div>
+      </div>
+
+      <div class="actionList">
+        <button 
+          class="actionBtn"
+          data-name="Normal Attack"
+          data-dmg="25"
+          data-mp="0"
+        >Normal Attack</button>
+        <button 
+          class="actionBtn"
+          data-name="Fire Attack"
+          data-dmg="25"
+          data-mp="5"
+        >Fire Attack</button>
+      </div>
+    </div>
+
+    <div class="battleMember" data-player="false" data-id="4" data-hp="20" data-mp="10" data-speed="10">
+      <p class="avatar">Enemy 2</p>
+      <div class="attributes">
+        <div><span class="current-hp"></span> / <span class="total-hp"></span> HP</div>
+        <div><span class="current-mp"></span> / <span class="total-mp"></span> MP</div>
+      </div>
+      <div class="meter">
+        <div class="progress"></div>
+      </div>
+
+      <div class="actionList">
+        <button 
+          class="actionBtn"
+          data-name="Normal Attack"
+          data-dmg="25"
+          data-mp="0"
+        >Normal Attack</button>
+        <button 
+          class="actionBtn"
+          data-name="Fire Attack"
+          data-dmg="25"
+          data-mp="5"
+        >Fire Attack</button>
+      </div>
+    </div>
+
+  </div>
+  <div class="log"></div>
+
+  <div class="player-data-ui">
+    <div>
+      <h2>inventory</h2>
+      <div class="inventory-list"></div>
+    </div>
+    <div>
+      <h2>xp<span class="xp-count"></span></h2>
+    </div>
+  </div>
+
+  <div class="controls-ui"></div>
+
+  <div class="prompt" style="opacity: 0; pointer-events: none;"></div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
