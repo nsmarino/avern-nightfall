@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>caldera ward detective | a game by avern systems</title>
+    <title>avern engine - stable build</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 
@@ -112,20 +112,23 @@
           align-items: center;
           flex-direction: column;
           gap: 1rem;
-          background: radial-gradient(hsl(0, 57%, 64%), hsl(340, 57%, 74%));
+          background: radial-gradient(hsl(103, 36%, 49%), hsl(116, 56%, 74%));
         }
 
         h1 {
-          text-transform: uppercase;
+          font-size: 110%;
+          text-transform: capitalize;
           letter-spacing: 0.02em;
           font-family: Arial, Helvetica, sans-serif;
           color: white;
           font-weight: normal;
-          text-shadow: orangered 1px 0 10px;
+          text-shadow: goldenrod 1px 0 10px;
         }
 
         h1 span {
-          color: brown;
+          color: black;
+          text-shadow: none;
+
         }
 
         .start-menu button {
@@ -214,7 +217,7 @@
   <div class="mask"></div><!-- Cover scene transitions via gsap-->
 
   <div class="start-menu">
-    <h1>caldera <span>ward</span> detective</h1>
+    <h1>avern engine: <span>stable build</span></h1>
     <button class="start-btn">New Game</button>
     <button disabled class="load-btn">Load Game</button>
     <button disabled class="options-btn">Options</button> <!-- Show/change controls layout etc-->
